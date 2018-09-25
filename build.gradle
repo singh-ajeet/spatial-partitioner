@@ -1,0 +1,29 @@
+import com.pb.bigdata.gradle.PrepareDistribution
+
+
+apply plugin: 'scala'
+apply plugin: PrepareDistribution
+apply from: "$rootDir/gradle/assemble.gradle"
+apply from: "$rootDir/gradle/ssh.gradle"
+
+dependencies {
+    compile libs.jts
+    compile group: 'com.opencsv', name: 'opencsv', version: '3.7'
+
+    compileOnly libs.spark2_211_201
+    compileOnly libs.jackson_scala_210
+
+    testCompile libs.spark2_211_201
+    testCompile libs.scala_test_211_226
+}
+
+tasks.withType(Test) {
+    systemProperty "hadoop.home.dir", "${project.rootDir}/testData/hadoop-2.6.0"
+}
+
+buildDist.configure {
+    dependsOn shadowJar
+    from(shadowJar.outputs.files) {
+        into "lib"
+    }
+}
